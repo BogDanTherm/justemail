@@ -1,0 +1,44 @@
+import pandas as pd
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# Load Excel sheet into a Pandas DataFrame
+df = pd.read_excel('material_providers.xlsx')
+
+# Email content
+subject = 'Declaration of Goods'
+body = 'Dear {},\n\nPlease be informed that due to new legislation, we require a declaration of any goods that were not sent.\n\nBest regards,\n[Your Name]'
+
+# Email account credentials
+sender_email = 'your_email@example.com'
+sender_password = 'your_email_password'
+
+# Email server settings
+smtp_server = 'smtp.gmail.com'
+smtp_port = 587
+
+# Connect to email server and login
+server = smtplib.SMTP(smtp_server, smtp_port)
+server.starttls()
+server.login(sender_email, sender_password)
+
+# Loop through each provider in the DataFrame and send email
+for index, row in df.iterrows():
+    recipient_email = row['Email']  # Replace 'Email' with the column name that contains the email addresses
+    recipient_name = row['Name']  # Replace 'Name' with the column name that contains the provider names
+    
+    # Create email message
+    message = MIMEMultipart()
+    message['From'] = sender_email
+    message['To'] = recipient_email
+    message['Subject'] = subject
+    message.attach(MIMEText(body.format(recipient_name), 'plain'))
+
+    # Send email
+    server.sendmail(sender_email, recipient_email, message.as_string())
+
+# Close email server connection
+server.quit()
+
+print('Emails sent successfully!')
